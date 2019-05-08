@@ -138,24 +138,24 @@ void PlotWindow::DrawLineGraph(std::vector<std::pair<double, double>> sample) {
     }
 
     SDL_SetRenderDrawColor(renderer,0x00,0x00,0xff,0xff);
-    for(int i = 0;i < w_width;i++) maxv_x[i] = INFINITY;
+    for(int i = 0;i < w_width;i++) maxv_x[i] = -INFINITY;
 
     for(int i = 0;i < sample.size();i++) {
         if(sample[i].first < x_min || sample[i].first > x_max) continue;
-        maxv_x[normGX(sample[i].first)] = std::min(maxv_x[normGX(sample[i].first)],sample[i].second);
+        maxv_x[normGX(sample[i].first)] = std::max(maxv_x[normGX(sample[i].first)],sample[i].second);
     }
     int cur = margin,next = margin;
     while(next < w_width) {
         do{
             next++;
-        } while(next < w_width && maxv_x[next] == INFINITY);
+        } while(next < w_width && maxv_x[next] == -INFINITY);
         SDL_RenderDrawLine(renderer,cur,normGY(maxv_x[cur]),next,normGY(maxv_x[next]));
         cur = next;
     }
 
     double smin = INFINITY,smax = -INFINITY;
     for(int i = 0;i < w_width;i++) {
-        if(maxv_x[i] == INFINITY) continue;
+        if(maxv_x[i] == -INFINITY) continue;
         smin = std::min(smin,maxv_x[i]);
         smax = std::max(smax,maxv_x[i]);
     }
