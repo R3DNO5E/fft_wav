@@ -64,6 +64,9 @@ int PlotWindow::HandleEvent() {
         if(ev.type == SDL_QUIT) {
             return 1;
         }
+	if(ev.type == SDL_KEYDOWN) {
+	    return 2;
+	}
     }
     return 0;
 }

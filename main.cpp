@@ -16,7 +16,7 @@ using std::min;
 constexpr int fft_n = 4410*4;
 
 int main(int args,char** argc) {
-    if(args < 2) {
+    if(args < 3) {
         cout << "Invalid argument" << endl;
         assert_error
     }
@@ -42,7 +42,9 @@ int main(int args,char** argc) {
     p = fftw_plan_dft_1d(fft_n,in,out,FFTW_FORWARD,FFTW_ESTIMATE);
 
     while(count + fft_n < wav.getSampleCount()) {
-        if(plot.HandleEvent() == 1) break;
+        int r = plot.HandleEvent();
+        if(r == 1) break;
+
         for(int i = 0;i < fft_n;i++) {
             auto d = (int*)((char *) wav.getRawBuffer() + ((count+i) * wav.getChannels() * (wav.getBitsPerSample() / 8)));
             in[i][0] = (double)(*d) / (double)INT16_MAX;
@@ -53,6 +55,14 @@ int main(int args,char** argc) {
         for(int i = 1;i < fft_n/2;i++) {
             dat.push_back(std::make_pair((double)i * ((double)wav.getSampleRate()) / ((double)fft_n),abs(out[i][0])));
         }
+	if(r == 2) {
+            FILE* f = fopen(argc[2],"w");
+            for(auto e:dat) {
+                fprintf(f,"%f:%f\n",e.first,e.second);
+	    }
+	    fclose(f);
+	    cout << "Transformed data dumped." << endl;
+	}
         if(dat2.size() < dat.size()) {
             dat2.clear();
             for(auto& e:dat) dat2.push_back(e);
