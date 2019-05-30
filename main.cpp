@@ -77,7 +77,13 @@ int main(int args,char** argc) {
         count += frames;
 
     }
-
     snd_pcm_close(snd_pcm);
+    
+    return 0;
+
+    while(1) {
+        int r = plot.HandleEvent();
+	if(r == 0) break;
+    }
     return 0;
 }
