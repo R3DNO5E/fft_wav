@@ -65,7 +65,18 @@ int PlotWindow::HandleEvent() {
             return 1;
         }
 	if(ev.type == SDL_KEYDOWN) {
-	    return 2;
+	    switch(ev.key.keysym.sym) {
+		case SDLK_ESCAPE:
+		    return 1;
+		case SDLK_SPACE:
+		    return 2;
+		case SDLK_g:
+                    SDL_SetWindowFullscreen(window,0);
+		    break;
+		case SDLK_f:
+                    SDL_SetWindowFullscreen(window,SDL_WINDOW_FULLSCREEN);
+		    break;
+	    }
 	}
     }
     return 0;
@@ -90,7 +101,7 @@ void PlotWindow::drawString(std::string str,int x,int y) {
     SDL_RenderCopy(renderer,a->first,NULL,&r);
 }
 
-void PlotWindow::DrawLineGraph(std::vector<std::pair<double, double>> sample) {
+void PlotWindow::DrawLineGraph(std::vector<std::pair<double, double>>& sample) {
     sort(sample.begin(),sample.end());
     SDL_SetRenderDrawColor(renderer,0xff,0xff,0xff,0xff);
     SDL_RenderClear(renderer);
@@ -152,7 +163,14 @@ void PlotWindow::DrawLineGraph(std::vector<std::pair<double, double>> sample) {
         do{
             next++;
         } while(next < w_width && maxv_x[next] == -INFINITY);
+        SDL_SetRenderDrawColor(renderer,0x00,0x00,0xff,0xff);
         SDL_RenderDrawLine(renderer,cur,normGY(maxv_x[cur]),next,normGY(maxv_x[next]));
+        SDL_SetRenderDrawColor(renderer,0xff,0x00,0x00,0xff);
+        SDL_RenderDrawPoint(renderer,cur,normGY(maxv_x[cur]));
+        SDL_RenderDrawPoint(renderer,cur,normGY(maxv_x[cur])+1);
+        SDL_RenderDrawPoint(renderer,cur,normGY(maxv_x[cur])-1);
+        SDL_RenderDrawPoint(renderer,cur-1,normGY(maxv_x[cur]));
+        SDL_RenderDrawPoint(renderer,cur+1,normGY(maxv_x[cur]));
         cur = next;
     }
 

@@ -42,7 +42,7 @@ public:
     bool isReady();
     int HandleEvent();
     void SetGrid(double x_min_,double x_max_,double y_min_,double y_max_,double x_grid_,double y_grid_,GridMode x_gridmode_,GridMode y_gridmode_);
-    void DrawLineGraph(std::vector<std::pair<double,double>> sample);
+    void DrawLineGraph(std::vector<std::pair<double,double>>& sample);
 };
 
 #endif //FFT_WAV_LIBPLOT_HPP

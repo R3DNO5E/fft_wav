@@ -13,14 +13,15 @@ using std::cout;
 using std::endl;
 using std::min;
 
-constexpr int fft_n = 4410*4;
+constexpr int fft_n = 16384;
 
 int main(int args,char** argc) {
     if(args < 3) {
         cout << "Invalid argument" << endl;
         assert_error
     }
-    PlotWindow plot(1280,800);
+    PlotWindow plot(1600,900);
+    //PlotWindow plot(1920,1080);
     plot.SetGrid(40,14000,0,0,10,10,PlotWindow::GridMode::Logarithm,PlotWindow::GridMode::Logarithm);
     if(!plot.isReady()) assert_error
     std::vector<std::pair<double,double>> dat,dat2;
@@ -58,7 +59,7 @@ int main(int args,char** argc) {
 	if(r == 2) {
             FILE* f = fopen(argc[2],"w");
             for(auto e:dat) {
-                fprintf(f,"%f:%f\n",e.first,e.second);
+                fprintf(f,"%024.12f %024.12f\n",e.first,e.second);
 	    }
 	    fclose(f);
 	    cout << "Transformed data dumped." << endl;
@@ -68,8 +69,10 @@ int main(int args,char** argc) {
             for(auto& e:dat) dat2.push_back(e);
         }
         for(int i = 0;i < dat2.size();i++) {
-            dat2[i].second = std::max(dat[i].second,dat2[i].second * 0.9);
+            //dat2[i].second = std::max(dat[i].second,dat2[i].second * 0.8);
+            dat2[i].second = dat[i].second*0.3+dat2[i].second * 0.7;
         }
+
         plot.DrawLineGraph(dat2);
         long b2wrt = min(wav.getSampleRate() / 50,wav.getSampleCount()-count);
         frames = snd_pcm_writei(snd_pcm, (char *) wav.getRawBuffer() + (count * wav.getChannels() * (wav.getBitsPerSample() / 8)), b2wrt);
