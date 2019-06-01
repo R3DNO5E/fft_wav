@@ -13,8 +13,8 @@ using std::cout;
 using std::endl;
 using std::min;
 
-constexpr int fft_n = 16384;
-
+constexpr int fft_n = 4410*2;
+constexpr int fft_mul = 1;
 int main(int args,char** argc) {
     if(args < 3) {
         cout << "Invalid argument" << endl;
@@ -38,9 +38,9 @@ int main(int args,char** argc) {
     fftw_complex *in,*out;
     fftw_plan p,r;
 
-    in = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*fft_n);
-    out = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*fft_n);
-    p = fftw_plan_dft_1d(fft_n,in,out,FFTW_FORWARD,FFTW_ESTIMATE);
+    in = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*fft_n*fft_mul);
+    out = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*fft_n*fft_mul);
+    p = fftw_plan_dft_1d(fft_n*fft_mul,in,out,FFTW_FORWARD,FFTW_ESTIMATE);
 
     while(count + fft_n < wav.getSampleCount()) {
         int r = plot.HandleEvent();
@@ -48,13 +48,15 @@ int main(int args,char** argc) {
 
         for(int i = 0;i < fft_n;i++) {
             auto d = (int*)((char *) wav.getRawBuffer() + ((count+i) * wav.getChannels() * (wav.getBitsPerSample() / 8)));
-            in[i][0] = (double)(*d) / (double)INT16_MAX;
-            in[i][1] = 0;
+	    for(int j = 0;j < fft_mul;j++) {
+            	in[i*fft_mul+j][0] = (double)(*d) / (double)INT16_MAX;
+            	in[i*fft_mul+j][1] = 0;
+	    }
         }
         fftw_execute(p);
         dat.clear();
-        for(int i = 1;i < fft_n/2;i++) {
-            dat.push_back(std::make_pair((double)i * ((double)wav.getSampleRate()) / ((double)fft_n),abs(out[i][0])));
+        for(int i = 1;i < (fft_n*fft_mul)/2;i++) {
+            dat.push_back(std::make_pair((double)i * ((double)wav.getSampleRate()) / ((double)fft_n*fft_mul),abs(out[i][0])));
         }
 	if(r == 2) {
             FILE* f = fopen(argc[2],"w");
