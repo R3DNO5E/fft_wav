@@ -5,7 +5,7 @@
 #include "libplot.hpp"
 #include <fftw3.h>
 #include <cmath>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #define assert_error {cout << "Error: " << __FILE__ << ":" << __LINE__ << endl;return -1;}
 
