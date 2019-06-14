@@ -3,9 +3,9 @@
 #include <vector>
 #include "libwav.hpp"
 #include "libplot.hpp"
-#include <alsa/asoundlib.h>
 #include <fftw3.h>
 #include <cmath>
+#include <SDL2/SDL.h>
 
 #define assert_error {cout << "Error: " << __FILE__ << ":" << __LINE__ << endl;return -1;}
 
@@ -15,6 +15,7 @@ using std::min;
 
 constexpr int fft_n = 4410*2;
 constexpr int fft_mul = 1;
+constexpr int audio_buf = 1024;
 int main(int args,char** argc) {
     if(args < 3) {
         cout << "Invalid argument" << endl;
@@ -30,10 +31,18 @@ int main(int args,char** argc) {
     cout << "Channels: " << wav.getChannels() << endl;
     cout << "Samples: " << wav.getSampleCount() << endl;
     cout << "Resolution: " << wav.getBitsPerSample() << endl;
-    snd_pcm_t* snd_pcm;
-    if(snd_pcm_open(&snd_pcm,"default",SND_PCM_STREAM_PLAYBACK,0) != 0) assert_error
-    if(snd_pcm_set_params(snd_pcm,SND_PCM_FORMAT_S16_LE,SND_PCM_ACCESS_RW_INTERLEAVED,wav.getChannels(),wav.getSampleRate(),1,40000) != 0) assert_error
-    snd_pcm_sframes_t frames;
+    if(SDL_Init(SDL_INIT_AUDIO) != 0) assert_error
+    if(SDL_AudioInit(SDL_GetAudioDriver(0)) != 0) assert_error
+    SDL_AudioSpec want,have;
+    want.freq = wav.getSampleRate();
+    want.format = AUDIO_S16;
+    want.channels = wav.getChannels();
+    want.samples = audio_buf;
+    want.callback = NULL;
+    SDL_AudioDeviceID aid = SDL_OpenAudioDevice(NULL,0,&want,&have,SDL_AUDIO_ALLOW_ANY_CHANGE);
+    if(aid == 0) assert_error
+    SDL_PauseAudioDevice(aid,0);
+    long frames = 0;
     long count = 0;
     fftw_complex *in,*out;
     fftw_plan p,r;
@@ -74,16 +83,15 @@ int main(int args,char** argc) {
             //dat2[i].second = std::max(dat[i].second,dat2[i].second * 0.8);
             dat2[i].second = dat[i].second*0.3+dat2[i].second * 0.7;
         }
-
         plot.DrawLineGraph(dat2);
-        long b2wrt = min(wav.getSampleRate() / 50,wav.getSampleCount()-count);
-        frames = snd_pcm_writei(snd_pcm, (char *) wav.getRawBuffer() + (count * wav.getChannels() * (wav.getBitsPerSample() / 8)), b2wrt);
-        if (frames < 0) frames = snd_pcm_recover(snd_pcm, frames, 0);
-        count += frames;
+        
+        long b2wrt = min((long)(audio_buf*2-SDL_GetQueuedAudioSize(aid)),(long)((wav.getSampleCount()-count)*wav.getChannels()*(wav.getBitsPerSample()/8)));
+        frames = SDL_QueueAudio(aid,(char *) wav.getRawBuffer() + (count * wav.getChannels() * (wav.getBitsPerSample() / 8)),b2wrt);
+        if (frames != 0) assert_error
+        count += b2wrt / (wav.getChannels() * (wav.getBitsPerSample()/8));
 
     }
-    snd_pcm_close(snd_pcm);
-    
+    SDL_CloseAudioDevice(aid);
     return 0;
 
     while(1) {

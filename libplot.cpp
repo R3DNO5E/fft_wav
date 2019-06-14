@@ -10,7 +10,7 @@ PlotWindow::PlotWindow(int width, int height) {
     w_width = width;
     maxv_x = new double[width];
     if(SDL_Init(SDL_INIT_VIDEO) < 0) return;
-    window = SDL_CreateWindow("LibPlot",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,width,height,SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("Plot Window",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,width,height,SDL_WINDOW_SHOWN);
     if(window == NULL) return;
     renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
     if(renderer == NULL) return;
