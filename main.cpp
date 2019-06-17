@@ -17,6 +17,7 @@ constexpr int fft_n = 4410*2;
 constexpr int fft_mul = 1;
 constexpr int audio_buf = 1024;
 int main(int args,char** argc) {
+    int files = 1;
     if(args < 3) {
         cout << "Invalid argument" << endl;
         assert_error
@@ -67,8 +68,11 @@ int main(int args,char** argc) {
         for(int i = 1;i < (fft_n*fft_mul)/2;i++) {
             dat.push_back(std::make_pair((double)i * ((double)wav.getSampleRate()) / ((double)fft_n*fft_mul),abs(out[i][0])));
         }
+    char buf[1024];
 	if(r == 2) {
-            FILE* f = fopen(argc[2],"w");
+            sprintf(buf,"%s.%d",argc[2],files);
+            files++;
+            FILE* f = fopen(buf,"w");
             for(auto e:dat) {
                 fprintf(f,"%024.12f %024.12f\n",e.first,e.second);
 	    }
